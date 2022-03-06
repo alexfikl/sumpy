@@ -55,11 +55,13 @@ class FMMLibExpansionOrderFinder:
 
         if isinstance(kernel, LaplaceKernel):
             if tree.dimensions == 2:
+                # pylint: disable=no-member
                 nterms, ier = pyfmmlib.l2dterms(self.tol)
                 if ier:
                     raise RuntimeError("l2dterms returned error code '%d'" % ier)
 
             elif tree.dimensions == 3:
+                # pylint: disable=no-member
                 nterms, ier = pyfmmlib.l3dterms(self.tol)
                 if ier:
                     raise RuntimeError("l3dterms returned error code '%d'" % ier)
@@ -69,11 +71,13 @@ class FMMLibExpansionOrderFinder:
             size = tree.root_extent / 2 ** level
 
             if tree.dimensions == 2:
+                # pylint: disable=no-member
                 nterms, ier = pyfmmlib.h2dterms(size, helmholtz_k, self.tol)
                 if ier:
                     raise RuntimeError("h2dterms returned error code '%d'" % ier)
 
             elif tree.dimensions == 3:
+                # pylint: disable=no-member
                 nterms, ier = pyfmmlib.h3dterms(size, helmholtz_k, self.tol)
                 if ier:
                     raise RuntimeError("h3dterms returned error code '%d'" % ier)

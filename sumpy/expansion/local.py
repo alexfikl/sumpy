@@ -235,7 +235,7 @@ class LineTaylorLocalExpansion(LocalExpansionBase):
 
 # {{{ volume taylor
 
-class VolumeTaylorLocalExpansionBase(LocalExpansionBase):
+class VolumeTaylorLocalExpansionMixin:
     """
     Coefficients represent derivative values of the kernel.
     """
@@ -507,11 +507,11 @@ class VolumeTaylorLocalExpansionBase(LocalExpansionBase):
             src_rscale = 1
             tgt_rscale = 1
 
-        from sumpy.expansion.multipole import VolumeTaylorMultipoleExpansionBase
+        from sumpy.expansion.multipole import VolumeTaylorMultipoleExpansionMixin
 
         # {{{ M2L
 
-        if isinstance(src_expansion, VolumeTaylorMultipoleExpansionBase):
+        if isinstance(src_expansion, VolumeTaylorMultipoleExpansionMixin):
             circulant_matrix_mis, needed_vector_terms, max_mi = \
                 self._m2l_translation_classes_dependent_data_mis(src_expansion)
             circulant_matrix_ident_to_index = {ident: i for i, ident in
@@ -685,22 +685,24 @@ class VolumeTaylorLocalExpansionBase(LocalExpansionBase):
 
 class VolumeTaylorLocalExpansion(
         VolumeTaylorExpansion,
-        VolumeTaylorLocalExpansionBase):
+        LocalExpansionBase,
+        VolumeTaylorLocalExpansionMixin):
 
     def __init__(self, kernel, order, use_rscale=None,
             use_preprocessing_for_m2l=False):
-        VolumeTaylorLocalExpansionBase.__init__(self, kernel, order, use_rscale,
+        LocalExpansionBase.__init__(self, kernel, order, use_rscale,
                 use_preprocessing_for_m2l)
         VolumeTaylorExpansion.__init__(self, kernel, order, use_rscale)
 
 
 class LinearPDEConformingVolumeTaylorLocalExpansion(
         LinearPDEConformingVolumeTaylorExpansion,
-        VolumeTaylorLocalExpansionBase):
+        LocalExpansionBase,
+        VolumeTaylorLocalExpansionMixin):
 
     def __init__(self, kernel, order, use_rscale=None,
             use_preprocessing_for_m2l=False):
-        VolumeTaylorLocalExpansionBase.__init__(self, kernel, order, use_rscale,
+        LocalExpansionBase.__init__(self, kernel, order, use_rscale,
                 use_preprocessing_for_m2l)
         LinearPDEConformingVolumeTaylorExpansion.__init__(
                 self, kernel, order, use_rscale)
@@ -765,6 +767,9 @@ class _FourierBesselLocalExpansion(LocalExpansionBase):
 
     def get_coefficient_identifiers(self):
         return list(range(-self.order, self.order+1))
+
+    def get_bessel_arg_scaling(self):
+        raise NotImplementedError
 
     def coefficients_from_source(self, kernel, avec, bvec, rscale, sac=None):
         if not self.use_rscale:
@@ -908,6 +913,7 @@ class _FourierBesselLocalExpansion(LocalExpansionBase):
                     for m in src_expansion.get_coefficient_identifiers()))
             return translated_coeffs
 
+        # pylint: disable=no-member
         if isinstance(src_expansion, self.mpole_expn_class):
             if m2l_translation_classes_dependent_data is None:
                 derivatives = self.m2l_translation_classes_dependent_data(

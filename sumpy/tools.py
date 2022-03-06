@@ -569,6 +569,8 @@ class ScalingAssignmentTag(Tag):
 class KernelComputation:
     """Common input processing for kernel computations."""
 
+    default_name = None
+
     def __init__(self, ctx, target_kernels, source_kernels, strength_usage,
             value_dtypes, name, device=None):
         """
@@ -712,7 +714,7 @@ class OrderedSet(MutableSet):
 # }}}
 
 
-class KernelCacheWrapper:
+class KernelCacheMixin:
     @memoize_method
     def get_cached_optimized_kernel(self, **kwargs):
         from sumpy import code_cache, CACHING_ENABLED, OPT_ENABLED
@@ -757,6 +759,9 @@ class KernelCacheWrapper:
         from loopy.match import ObjTagged
         return lp.add_inames_for_unused_hw_axes(
                 knl, within=ObjTagged(ScalingAssignmentTag()))
+
+
+KernelCacheWrapper = KernelCacheMixin
 
 
 def is_obj_array_like(ary):

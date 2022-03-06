@@ -98,20 +98,16 @@ class KernelArgument:
         return self.loopy_arg.name
 
     def __eq__(self, other):
-        if id(self) == id(other):
+        if self is other:
             return True
-        if not type(self) == KernelArgument:
+
+        if type(self) is not KernelArgument or type(other) is not KernelArgument:
             return NotImplemented
-        if not type(other) == KernelArgument:
-            return NotImplemented
+
         return self.loopy_arg == other.loopy_arg
 
-    def __ne__(self, other):
-        # Needed for python2
-        return not self == other
-
     def __hash__(self):
-        return (type(self), self.loopy_arg)
+        return hash((type(self), self.loopy_arg))
 
 
 # {{{ basic kernel interface
@@ -135,6 +131,8 @@ class Kernel:
     .. automethod:: get_source_args
     """
 
+    init_arg_names = ("dim",)
+
     def __init__(self, dim):
         self.dim = dim
 
@@ -147,6 +145,7 @@ class Kernel:
             return False
         else:
             return (type(self) is type(other)
+                    # pylint: disable=no-member
                     and self.__getinitargs__() == other.__getinitargs__())
 
     def __ne__(self, other):
@@ -156,14 +155,18 @@ class Kernel:
         try:
             return self.hash_value
         except AttributeError:
+            # pylint: disable=no-member
             self.hash_value = hash((type(self),) + self.__getinitargs__())
             return self.hash_value
 
     def update_persistent_hash(self, key_hash, key_builder):
         key_hash.update(type(self).__name__.encode("utf8"))
+
+        # pylint: disable=no-member
         key_builder.rec(key_hash, self.__getinitargs__())
 
     def __getstate__(self):
+        # pylint: disable=no-member
         return self.__getinitargs__()
 
     def __setstate__(self, state):
@@ -1073,9 +1076,11 @@ class _VectorIndexAdder(CSECachingMapperMixin, IdentityMapper):
 
 class DirectionalDerivative(DerivativeBase):
     init_arg_names = ("inner_kernel", "dir_vec_name")
+    directional_kind = None
 
     def __init__(self, inner_kernel, dir_vec_name=None):
         if dir_vec_name is None:
+            assert self.directional_kind is not None
             dir_vec_name = self.directional_kind + "_derivative_dir"
 
         KernelWrapper.__init__(self, inner_kernel)
@@ -1294,6 +1299,9 @@ class KernelMapper:
 
 
 class KernelCombineMapper(KernelMapper):
+    def combine(self, values):
+        raise NotImplementedError
+
     def map_difference_kernel(self, kernel):
         return self.combine([
                 self.rec(kernel.kernel_plus),
@@ -1384,26 +1392,5 @@ class DerivativeCounter(KernelCombineMapper):
     map_axis_source_derivative = map_axis_target_derivative
 
 # }}}
-
-
-def to_kernel_and_args(kernel_like):
-    if (isinstance(kernel_like, tuple)
-            and len(kernel_like) == 2
-            and isinstance(kernel_like[0], Kernel)):
-        # already gone through to_kernel_and_args
-        return kernel_like
-
-    if not isinstance(kernel_like, Kernel):
-        if kernel_like == 0:
-            return LaplaceKernel(), {}
-        elif isinstance(kernel_like, str):
-            return HelmholtzKernel(None), {"k": var(kernel_like)}
-        else:
-            raise ValueError("Only Kernel instances, 0 (for Laplace) and "
-                    "variable names (strings) "
-                    "for the Helmholtz parameter are allowed as kernels.")
-
-    return kernel_like, {}
-
 
 # vim: fdm=marker

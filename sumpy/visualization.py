@@ -140,6 +140,7 @@ class FieldPlotter:
         squeezed_fld = fld.squeeze()
 
         if max_val is not None:
+            # pylint: disable=invalid-unary-operand-type
             squeezed_fld[squeezed_fld > max_val] = max_val
             squeezed_fld[squeezed_fld < -max_val] = -max_val
 
@@ -180,6 +181,7 @@ class FieldPlotter:
 
     def show_scalar_in_mayavi(self, fld, max_val=None, **kwargs):
         if max_val is not None:
+            # pylint: disable=invalid-unary-operand-type
             fld[fld > max_val] = max_val
             fld[fld < -max_val] = -max_val
 

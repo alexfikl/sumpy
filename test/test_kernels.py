@@ -31,7 +31,7 @@ from pyopencl.tools import (  # noqa
 
 from sumpy.expansion.multipole import (
         VolumeTaylorMultipoleExpansion, H2DMultipoleExpansion,
-        VolumeTaylorMultipoleExpansionBase,
+        VolumeTaylorMultipoleExpansionMixin,
         LinearPDEConformingVolumeTaylorMultipoleExpansion)
 from sumpy.expansion.local import (
         VolumeTaylorLocalExpansion, H2DLocalExpansion,
@@ -443,7 +443,7 @@ def test_p2e2p(ctx_factory, base_knl, expn_class, order, with_source_derivative)
             slack += 0.5
             grad_slack += 0.5
 
-        if issubclass(expn_class, VolumeTaylorMultipoleExpansionBase):
+        if issubclass(expn_class, VolumeTaylorMultipoleExpansionMixin):
             slack += 0.3
             grad_slack += 0.3
 
@@ -806,8 +806,8 @@ def _m2l_translate_simple(tgt_expansion, src_expansion, src_coeff_exprs, src_rsc
         src_rscale = 1
         tgt_rscale = 1
 
-    from sumpy.expansion.multipole import VolumeTaylorMultipoleExpansionBase
-    if not isinstance(src_expansion, VolumeTaylorMultipoleExpansionBase):
+    from sumpy.expansion.multipole import VolumeTaylorMultipoleExpansionMixin
+    if not isinstance(src_expansion, VolumeTaylorMultipoleExpansionMixin):
         return 1
 
     # We know the general form of the multipole expansion is:

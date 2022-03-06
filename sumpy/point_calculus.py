@@ -241,7 +241,7 @@ class CalculusPatch:
         """
         f_values = f_values.reshape(*self._pshape)
         for _ in range(self.dim):
-            f_values = self._zero_eval_vec_1d.dot(f_values)
+            f_values = self._zero_eval_vec_1d().dot(f_values)
 
         return f_values
 

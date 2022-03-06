@@ -28,7 +28,7 @@ import loopy as lp
 from loopy.version import MOST_RECENT_LANGUAGE_VERSION
 
 from sumpy.tools import (
-        KernelComputation, KernelCacheWrapper, is_obj_array_like)
+        KernelComputation, KernelCacheMixin, is_obj_array_like)
 
 
 __doc__ = """
@@ -50,7 +50,7 @@ Particle-to-particle
 
 # {{{ p2p base class
 
-class P2PBase(KernelComputation, KernelCacheWrapper):
+class P2PBase(KernelComputation, KernelCacheMixin):
     def __init__(self, ctx, target_kernels, exclude_self, strength_usage=None,
             value_dtypes=None, name=None, device=None, source_kernels=None):
         """

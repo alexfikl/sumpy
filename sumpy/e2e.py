@@ -25,7 +25,7 @@ import loopy as lp
 import sumpy.symbolic as sym
 
 from loopy.version import MOST_RECENT_LANGUAGE_VERSION
-from sumpy.tools import KernelCacheWrapper, to_complex_dtype
+from sumpy.tools import KernelCacheMixin, to_complex_dtype
 from pytools import memoize_method
 
 import logging
@@ -47,7 +47,9 @@ Expansion-to-expansion
 
 # {{{ translation base class
 
-class E2EBase(KernelCacheWrapper):
+class E2EBase(KernelCacheMixin):
+    default_name = "base"
+
     def __init__(self, ctx, src_expansion, tgt_expansion,
             name=None, device=None):
         """
@@ -129,6 +131,10 @@ class E2EBase(KernelCacheWrapper):
                 self.src_expansion,
                 self.tgt_expansion,
         )
+
+    def get_kernel(self):
+        # NOTE: needs to be implemented by subclasses
+        raise NotImplementedError
 
     def get_optimized_kernel(self):
         # FIXME

@@ -691,7 +691,7 @@ class SchematicVisitor:
             elif expn_style == "circle":
                 draw_circle(psource.center, psource.radius, fill=None)
             else:
-                raise ValueError("unknown expn_style: %s" % self.expn_style)
+                raise ValueError("unknown expn_style: %s" % expn_style)
 
         if psource.derived_from is None:
             return

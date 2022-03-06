@@ -46,7 +46,7 @@ class MultipoleExpansionBase(ExpansionBase):
 
 # {{{ volume taylor
 
-class VolumeTaylorMultipoleExpansionBase(MultipoleExpansionBase):
+class VolumeTaylorMultipoleExpansionMixin:
     """
     Coefficients represent the terms in front of the kernel derivatives.
     """
@@ -344,19 +344,21 @@ class VolumeTaylorMultipoleExpansionBase(MultipoleExpansionBase):
 
 class VolumeTaylorMultipoleExpansion(
         VolumeTaylorExpansion,
-        VolumeTaylorMultipoleExpansionBase):
+        MultipoleExpansionBase,
+        VolumeTaylorMultipoleExpansionMixin):
 
     def __init__(self, kernel, order, use_rscale=None):
-        VolumeTaylorMultipoleExpansionBase.__init__(self, kernel, order, use_rscale)
+        MultipoleExpansionBase.__init__(self, kernel, order, use_rscale)
         VolumeTaylorExpansion.__init__(self, kernel, order, use_rscale)
 
 
 class LinearPDEConformingVolumeTaylorMultipoleExpansion(
         LinearPDEConformingVolumeTaylorExpansion,
-        VolumeTaylorMultipoleExpansionBase):
+        MultipoleExpansionBase,
+        VolumeTaylorMultipoleExpansionMixin):
 
     def __init__(self, kernel, order, use_rscale=None):
-        VolumeTaylorMultipoleExpansionBase.__init__(self, kernel, order, use_rscale)
+        MultipoleExpansionBase.__init__(self, kernel, order, use_rscale)
         LinearPDEConformingVolumeTaylorExpansion.__init__(
                 self, kernel, order, use_rscale)
 
@@ -404,6 +406,9 @@ class _HankelBased2DMultipoleExpansion(MultipoleExpansionBase):
 
     def get_coefficient_identifiers(self):
         return list(range(-self.order, self.order+1))
+
+    def get_bessel_arg_scaling(self):
+        raise NotImplementedError
 
     def coefficients_from_source(self, kernel, avec, bvec, rscale, sac=None):
         if not self.use_rscale:

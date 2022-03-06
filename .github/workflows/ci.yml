@@ -23,6 +23,18 @@ jobs:
                 curl -L -O https://gitlab.tiker.net/inducer/ci-support/raw/main/prepare-and-run-flake8.sh
                 . ./prepare-and-run-flake8.sh "$(basename $GITHUB_REPOSITORY)" test examples benchmarks
 
+    pylint:
+        name: Pylint
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v2
+        -   name: "Main Script"
+            run: |
+                CONDA_ENVIRONMENT=.test-conda-env-py3.yml
+                curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/prepare-and-run-pylint.sh
+
+                . ./prepare-and-run-pylint.sh pytential test/test_*.py
+
     docs:
         name: Documentation
         runs-on: ubuntu-latest

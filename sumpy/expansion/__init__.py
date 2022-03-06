@@ -639,6 +639,11 @@ class LinearPDEBasedExpansionTermsWrangler(ExpansionTermsWrangler):
 # {{{ volume taylor
 
 class VolumeTaylorExpansionBase:
+    expansion_terms_wrangler_class = type
+    expansion_terms_wrangler_cache = {}
+
+    def __init__(self, expansion_terms_wrangler_key):
+        self.expansion_terms_wrangler_key = expansion_terms_wrangler_key
 
     @classmethod
     def get_or_make_expansion_terms_wrangler(cls, *key):
@@ -686,7 +691,7 @@ class VolumeTaylorExpansion(VolumeTaylorExpansionBase):
 
     # not user-facing, be strict about having to pass use_rscale
     def __init__(self, kernel, order, use_rscale):
-        self.expansion_terms_wrangler_key = (order, kernel.dim)
+        super().__init__((order, kernel.dim))
 
 
 class LinearPDEConformingVolumeTaylorExpansion(VolumeTaylorExpansionBase):
@@ -696,7 +701,7 @@ class LinearPDEConformingVolumeTaylorExpansion(VolumeTaylorExpansionBase):
 
     # not user-facing, be strict about having to pass use_rscale
     def __init__(self, kernel, order, use_rscale):
-        self.expansion_terms_wrangler_key = (order, kernel.dim, kernel)
+        super().__init__((order, kernel.dim, kernel))
 
 
 class LaplaceConformingVolumeTaylorExpansion(

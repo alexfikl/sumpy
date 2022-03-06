@@ -119,7 +119,7 @@ if not USE_SYMENGINE:
         pass
 
 if not have_unevaluated_expr:
-    def UnevaluatedExpr(x):  # noqa
+    def UnevaluatedExpr(x):  # noqa: N802,F811 pylint: disable=function-redefined
         return x
 
 
@@ -301,10 +301,10 @@ _SympyBesselJ = BesselJ
 _SympyHankel1 = Hankel1
 
 if USE_SYMENGINE:
-    def BesselJ(*args):   # noqa: N802
+    def BesselJ(*args):   # noqa: N802 pylint: disable=function-redefined
         return sym.sympify(_SympyBesselJ(*args))
 
-    def Hankel1(*args):   # noqa: N802
+    def Hankel1(*args):   # noqa: N802 pylint: disable=function-redefined
         return sym.sympify(_SympyHankel1(*args))
 
 # vim: fdm=marker

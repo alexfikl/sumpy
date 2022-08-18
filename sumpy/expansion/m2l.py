@@ -298,8 +298,7 @@ class VolumeTaylorM2LTranslation(M2LTranslationBase):
 
         return len(mis_with_dummy_rows)
 
-    def _translation_classes_dependent_data_mis(self, tgt_expansion,
-                                                    src_expansion):
+    def _translation_classes_dependent_data_mis(self, tgt_expansion, src_expansion):
         """We would like to compute the M2L by way of a circulant matrix below.
         To get the matrix representing the M2L into circulant form, a certain
         numbering of rows and columns (as identified by multi-indices) is
@@ -317,43 +316,55 @@ class VolumeTaylorM2LTranslation(M2LTranslationBase):
         of the M2L translation matrix and the maximum multi-index of the
         latter.
         """
-        from pytools import generate_nonnegative_integer_tuples_below as gnitb
-
-        from sumpy.tools import add_mi
+        from pytools import (
+            generate_nonnegative_integer_tuples_below as gnitb,
+            memoize_in,
+        )
 
         dim = tgt_expansion.dim
-        # max_mi is the multi-index which is the sum of the
-        # element-wise maximum of source multi-indices and the
-        # element-wise maximum of target multi-indices.
-        max_mi = [0]*dim
-        for i in range(dim):
-            max_mi[i] = max(mi[i] for mi in
-                              src_expansion.get_coefficient_identifiers())
-            max_mi[i] += max(mi[i] for mi in
-                              tgt_expansion.get_coefficient_identifiers())
+        src_coefficient_identifiers = src_expansion.get_coefficient_identifiers()
+        tgt_coefficient_identifiers = tgt_expansion.get_coefficient_identifiers()
 
-        # These are the multi-indices representing the rows
-        # in the circulant matrix.  Note that to get the circulant
-        # matrix structure some multi-indices that are not in the
-        # M2L translation matrix are added.
-        # This corresponds to adding O(p^(d-1))
-        # additional rows and columns in the case of some PDEs
-        # like Laplace and O(p^d) in other cases.
-        circulant_matrix_mis = list(gnitb([m + 1 for m in max_mi]))
+        @memoize_in(self, (
+            VolumeTaylorM2LTranslation._translation_classes_dependent_data_mis,
+            src_coefficient_identifiers, tgt_coefficient_identifiers
+            ))
+        def data():
+            # max_mi is the multi-index which is the sum of the
+            # element-wise maximum of source multi-indices and the
+            # element-wise maximum of target multi-indices.
+            max_mi = [
+                max(mi[i] for mi in src_coefficient_identifiers)
+                + max(mi[i] for mi in tgt_coefficient_identifiers)
+                for i in range(dim)
+                ]
 
-        # These are the multi-indices representing the rows
-        # in the M2L translation matrix without the additional
-        # multi-indices in the circulant matrix
-        needed_vector_terms = set()
-        # For eg: 2D full Taylor Laplace, we only need kernel derivatives
-        # (n1+n2, m1+m2), n1+m1<=p, n2+m2<=p
-        for tgt_deriv in tgt_expansion.get_coefficient_identifiers():
-            for src_deriv in src_expansion.get_coefficient_identifiers():
-                needed = add_mi(src_deriv, tgt_deriv)
-                if needed not in needed_vector_terms:
-                    needed_vector_terms.add(needed)
+            # These are the multi-indices representing the rows
+            # in the circulant matrix.  Note that to get the circulant
+            # matrix structure some multi-indices that are not in the
+            # M2L translation matrix are added.
+            # This corresponds to adding O(p^(d-1))
+            # additional rows and columns in the case of some PDEs
+            # like Laplace and O(p^d) in other cases.
+            circulant_matrix_mis = list(gnitb([m + 1 for m in max_mi]))
 
-        return circulant_matrix_mis, tuple(needed_vector_terms), max_mi
+            # These are the multi-indices representing the rows
+            # in the M2L translation matrix without the additional
+            # multi-indices in the circulant matrix
+            needed_vector_terms = set()
+            # For eg: 2D full Taylor Laplace, we only need kernel derivatives
+            # (n1+n2, m1+m2), n1+m1<=p, n2+m2<=p
+            for tgt_deriv in tgt_coefficient_identifiers:
+                for src_deriv in src_coefficient_identifiers:
+                    needed = tuple([
+                        src_deriv[i] + tgt_deriv[i] for i in range(len(tgt_deriv))
+                        ])
+                    if needed not in needed_vector_terms:
+                        needed_vector_terms.add(needed)
+
+            return circulant_matrix_mis, tuple(needed_vector_terms), max_mi
+
+        return data()
 
     def translation_classes_dependent_data(self, tgt_expansion, src_expansion,
             src_rscale, dvec, sac):

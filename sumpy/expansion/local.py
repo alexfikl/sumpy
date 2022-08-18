@@ -110,7 +110,7 @@ class LineTaylorLocalExpansion(LocalExpansionBase):
         return k
 
     def get_coefficient_identifiers(self):
-        return list(range(self.order+1))
+        return tuple(range(self.order+1))
 
     def coefficients_from_source(self, kernel, avec, bvec, rscale, sac=None):
         # no point in heeding rscale here--just ignore it
@@ -489,7 +489,7 @@ class _FourierBesselLocalExpansion(LocalExpansionBase):
         return self.order+k
 
     def get_coefficient_identifiers(self):
-        return list(range(-self.order, self.order+1))
+        return tuple(range(-self.order, self.order+1))
 
     def coefficients_from_source(self, kernel, avec, bvec, rscale, sac=None):
         if not self.use_rscale:

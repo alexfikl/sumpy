@@ -545,7 +545,7 @@ class LinearPDEBasedExpansionTermsWrangler(ExpansionTermsWrangler):
     @property
     def stored_identifiers(self):
         stored_identifiers, _ = self.get_stored_ids_and_unscaled_projection_matrix()
-        return stored_identifiers
+        return tuple(stored_identifiers)
 
     # If there exists an axis-normal hyperplane without a PDE (derivative)
     # multi-index on it, then the coefficients on that hyperplane *must* be
